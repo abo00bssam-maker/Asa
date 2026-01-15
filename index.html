@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>هندسة الكرة - مسألة الحجم والمساحة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #1a202c;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        @media (min-width: 768px) {
+            .main-container { flex-direction: row; }
+        }
+
+        .chalkboard {
+            background-color: #22303c;
+            border: 12px solid #3d4f5f;
+            border-radius: 10px;
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.5);
+            flex: 1;
+            padding: 30px;
+            min-height: 700px;
+        }
+
+        .visual-area {
+            background-color: #2d3748;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 350px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: sticky;
+            top: 20px;
+            border: 2px solid #4a5568;
+        }
+
+        .sphere {
+            width: 160px;
+            height: 160px;
+            background: radial-gradient(circle at 30% 30%, #4299e1, #2b6cb0);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: inset -20px -20px 50px rgba(0,0,0,0.5), 0 20px 30px rgba(0,0,0,0.3);
+            animation: rotateSphere 12s infinite linear;
+        }
+
+        .radius-line {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80px;
+            height: 2px;
+            background: #ffd700;
+            transform-origin: left;
+            animation: pulseLine 2s infinite ease-in-out;
+        }
+
+        @keyframes rotateSphere {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        @keyframes pulseLine {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .line-container { margin-bottom: 20px; line-height: 1.8; }
+
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            height: 1.2em;
+            background-color: #ffd700;
+            margin-right: 4px;
+            animation: blink 0.5s step-end infinite;
+        }
+
+        @keyframes blink { from, to { opacity: 1 } 50% { opacity: 0 } }
+
+        .math-box {
+            background: rgba(66, 153, 225, 0.1);
+            border-right: 4px solid #4299e1;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .question-highlight {
+            background-color: rgba(255, 215, 0, 0.1);
+            border: 1px dashed #ffd700;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .btn-replay {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #e53e3e;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 100;
+            display: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- السبورة -->
+        <div class="chalkboard">
+            <div id="canvas"></div>
+        </div>
+
+        <!-- المنطقة المرئية -->
+        <div class="visual-area">
+            <h3 class="mb-6 text-blue-300 font-bold text-xl">المجسم الهندسي (الكرة)</h3>
+            <div class="sphere">
+                <div class="radius-line"></div>
+                <div style="position:absolute; top:48%; left:48%; width:8px; height:8px; background:white; border-radius:50%; z-index:10;"></div>
+            </div>
+            <p class="mt-8 text-yellow-400 font-bold text-lg">نق (r) = ؟؟</p>
+            <div class="mt-6 text-sm text-gray-300 bg-gray-900 bg-opacity-40 p-4 rounded-lg text-center">
+                المعطى في السؤال:<br>
+                <span class="text-blue-400 font-bold text-lg">الحجم = 36π</span>
+            </div>
+        </div>
+    </div>
+
+    <button id="replayBtn" class="btn-replay" onclick="resetBoard()">إعادة الشرح ↻</button>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const replayBtn = document.getElementById('replayBtn');
+
+        const script = [
+            { text: "📝 حل مسألة رياضية: مساحة سطح الكرة", style: "text-2xl font-bold text-yellow-400 border-b-2 border-yellow-500 pb-2 mb-4" },
+            { text: "السؤال: إذا كان حجم كرة يساوي 36π سم³، فاحسب مساحة سطحها؟", style: "question-highlight text-xl text-white font-semibold italic" },
+            { text: "--------------------------------------------------", style: "text-gray-600" },
+            { text: "الخطوة الأولى: إيجاد نصف القطر (نق) من الحجم", style: "text-xl font-bold text-blue-300" },
+            { text: "نعلم أن قانون الحجم هو: (4/3) × π × نق³", style: "text-lg" },
+            { text: "36π = (4/3) × π × نق³", style: "math-box text-xl" },
+            { text: "بقسمة الطرفين على π واختصار الكسور:", style: "text-lg" },
+            { text: "نق³ = 36 × (3/4) = 27", style: "math-box text-xl text-yellow-300" },
+            { text: "بأخذ الجذر التكعيبي: نق = 3 سم", style: "text-xl font-bold text-green-400" },
+            { text: "--------------------------------------------------", style: "text-gray-600" },
+            { text: "الخطوة الثانية: حساب مساحة السطح باستخدام (نق = 3)", style: "text-xl font-bold text-blue-300" },
+            { text: "قانون مساحة سطح الكرة = 4 × π × نق²", style: "text-lg" },
+            { text: "المساحة = 4 × π × (3)²", style: "math-box text-xl" },
+            { text: "المساحة = 4 × π × 9", style: "math-box text-xl" },
+            { text: "النتيجة النهائية:", style: "text-lg font-bold" },
+            { text: "مساحة سطح الكرة = 36π سم²", style: "text-3xl font-bold text-green-500 border-4 border-green-500 p-4 inline-block mt-2 rounded-xl" },
+            { text: "✅ نلاحظ في هذه الحالة الخاصة أن القيمة العددية للحجم تساوي القيمة العددية للمساحة!", style: "text-md text-orange-300 mt-4 italic" }
+        ];
+
+        async function typeLine(item) {
+            const lineDiv = document.createElement('div');
+            lineDiv.className = "line-container " + (item.style || "");
+            const textSpan = document.createElement('span');
+            const cursorSpan = document.createElement('span');
+            cursorSpan.className = "cursor";
+            
+            lineDiv.appendChild(textSpan);
+            lineDiv.appendChild(cursorSpan);
+            canvas.appendChild(lineDiv);
+
+            const fullText = item.text;
+            for (let i = 1; i <= fullText.length; i++) {
+                textSpan.innerText = fullText.substring(0, i);
+                await new Promise(r => setTimeout(r, 45)); 
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+            
+            cursorSpan.remove(); 
+            await new Promise(r => setTimeout(r, 900)); 
+        }
+
+        async function startPresentation() {
+            canvas.innerHTML = '';
+            replayBtn.style.display = 'none';
+            for (const line of script) {
+                await typeLine(line);
+            }
+            replayBtn.style.display = 'block';
+        }
+
+        function resetBoard() {
+            startPresentation();
+        }
+
+        window.onload = () => {
+            setTimeout(startPresentation, 500);
+        };
+    </script>
+</body>
+</html>
+
