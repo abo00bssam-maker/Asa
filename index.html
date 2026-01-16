@@ -3,222 +3,358 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>هندسة الكرة - مسألة الحجم والمساحة</title>
+    <title>هندسة الكرة - إعداد الأستاذ أبو بسام</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #1a202c;
-            color: #ffffff;
+            background-color: #020617; 
+            color: #f8fafc;
             margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        .main-container {
+        .main-layout {
             display: flex;
             flex-direction: column;
             gap: 20px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1250px;
+            height: calc(100vh - 40px);
         }
 
-        @media (min-width: 768px) {
-            .main-container { flex-direction: row; }
+        @media (min-width: 900px) {
+            .main-layout { flex-direction: row; }
         }
 
-        .chalkboard {
-            background-color: #22303c;
-            border: 12px solid #3d4f5f;
-            border-radius: 10px;
-            box-shadow: inset 0 0 80px rgba(0,0,0,0.5);
+        .chalkboard-outer {
+            flex: 1.4;
+            display: flex;
+            flex-direction: column;
+            background-color: #0f172a;
+            border: 4px solid #1e293b;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .chalkboard-header {
+            background-color: #1e293b;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chalkboard-content {
             flex: 1;
             padding: 30px;
-            min-height: 700px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #334155 transparent;
         }
 
-        .visual-area {
-            background-color: #2d3748;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 350px;
-            height: 400px;
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 0.9em;
+            margin: 0 4px;
+        }
+        .num { border-bottom: 2px solid currentColor; padding: 0 2px; }
+        .den { padding: 0 2px; }
+
+        .side-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .visual-card {
+            background: #020617; /* لون أعمق لإبراز الكريستال */
+            border: 2px solid #1e293b;
+            border-radius: 20px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            position: sticky;
-            top: 20px;
-            border: 2px solid #4a5568;
-        }
-
-        .sphere {
-            width: 160px;
-            height: 160px;
-            background: radial-gradient(circle at 30% 30%, #4299e1, #2b6cb0);
-            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            flex: 1.5;
             position: relative;
-            box-shadow: inset -20px -20px 50px rgba(0,0,0,0.5), 0 20px 30px rgba(0,0,0,0.3);
-            animation: rotateSphere 12s infinite linear;
         }
 
-        .radius-line {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 80px;
-            height: 2px;
-            background: #ffd700;
-            transform-origin: left;
-            animation: pulseLine 2s infinite ease-in-out;
+        #sphere-canvas-container {
+            width: 100%;
+            height: 100%;
+            min-height: 380px;
+            cursor: move;
         }
 
-        @keyframes rotateSphere {
-            from { transform: rotateY(0deg); }
-            to { transform: rotateY(360deg); }
+        .math-block {
+            background: rgba(14, 165, 233, 0.05);
+            border-right: 4px solid #38bdf8;
+            padding: 15px 20px;
+            margin: 12px 0;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            direction: ltr; 
+            justify-content: flex-end;
         }
 
-        @keyframes pulseLine {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        .line-container { margin-bottom: 20px; line-height: 1.8; }
-
-        .cursor {
-            display: inline-block;
-            width: 3px;
-            height: 1.2em;
-            background-color: #ffd700;
-            margin-right: 4px;
-            animation: blink 0.5s step-end infinite;
-        }
-
-        @keyframes blink { from, to { opacity: 1 } 50% { opacity: 0 } }
-
-        .math-box {
-            background: rgba(66, 153, 225, 0.1);
-            border-right: 4px solid #4299e1;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace;
+        .info-card {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 20px;
+            border-right: 5px solid #f59e0b;
         }
 
         .question-highlight {
-            background-color: rgba(255, 215, 0, 0.1);
-            border: 1px dashed #ffd700;
+            background: rgba(245, 158, 11, 0.1);
+            border-right: 4px solid #f59e0b;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 25px;
         }
 
+        .line-container { margin-bottom: 20px; line-height: 1.8; font-size: 1.1rem; }
+
         .btn-replay {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #e53e3e;
+            bottom: 30px;
+            left: 30px;
+            background: #334155;
             color: white;
             padding: 10px 25px;
-            border-radius: 50px;
-            cursor: pointer;
-            z-index: 100;
-            display: none;
+            border-radius: 10px;
             font-weight: bold;
+            display: none;
+            cursor: pointer;
+            z-index: 1000;
+            border: 1px solid #475569;
+        }
+
+        .final-badge {
+            background: #059669;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-size: 1.6rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .gold-text {
+            color: #fbbf24;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
         }
     </style>
 </head>
 <body>
 
-    <div class="main-container">
-        <!-- السبورة -->
-        <div class="chalkboard">
-            <div id="canvas"></div>
+    <div class="main-layout">
+        <div class="chalkboard-outer">
+            <div class="chalkboard-header">
+                <span class="text-sky-400 font-bold">حل مسألة هندسة الكرة</span>
+                <span class="gold-text">إشراف: الأستاذ أبو بسام</span>
+            </div>
+            
+            <div class="chalkboard-content" id="boardScroll">
+                <div id="canvas"></div>
+            </div>
         </div>
 
-        <!-- المنطقة المرئية -->
-        <div class="visual-area">
-            <h3 class="mb-6 text-blue-300 font-bold text-xl">المجسم الهندسي (الكرة)</h3>
-            <div class="sphere">
-                <div class="radius-line"></div>
-                <div style="position:absolute; top:48%; left:48%; width:8px; height:8px; background:white; border-radius:50%; z-index:10;"></div>
+        <div class="side-panel">
+            <div class="visual-card">
+                <h2 class="text-xs font-bold text-sky-400 uppercase tracking-[0.2em] mt-2 mb-2">إثراء بصري هندسي</h2>
+                <div id="sphere-canvas-container"></div>
             </div>
-            <p class="mt-8 text-yellow-400 font-bold text-lg">نق (r) = ؟؟</p>
-            <div class="mt-6 text-sm text-gray-300 bg-gray-900 bg-opacity-40 p-4 rounded-lg text-center">
-                المعطى في السؤال:<br>
-                <span class="text-blue-400 font-bold text-lg">الحجم = 36π</span>
+
+            <div class="info-card">
+                <h3 class="text-amber-400 font-bold mb-3 text-sm">ارتباط المساحة بالحجم:</h3>
+                <div class="space-y-2 text-xs text-slate-300 leading-relaxed">
+                    <p>• <span class="text-sky-400 font-bold">المساحة:</span> هي الغلاف الخارجي وتعتمد على المربع (r²).</p>
+                    <p>• <span class="text-amber-400 font-bold">الحجم:</span> هو الامتلاء الداخلي ويعتمد على المكعب (r³).</p>
+                    <p>• لاحظ في المحاكاة كيف تبدأ الدائرة من نقطة ثم تنمو لتشكل الحجم الكامل.</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <button id="replayBtn" class="btn-replay" onclick="resetBoard()">إعادة الشرح ↻</button>
+    <button id="replayBtn" class="btn-replay" onclick="resetBoard()">إعادة العرض ↻</button>
 
     <script>
+        // --- إعداد المحاكاة البصرية الفائقة (3D) ---
+        let scene, camera, renderer, sphere, wireframe, radiusLines = [];
+        let growthValue = 0;
+        
+        function init3D() {
+            const container = document.getElementById('sphere-canvas-container');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(35, container.clientWidth / container.clientHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+            
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const pLight = new THREE.PointLight(0xffffff, 1.2);
+            pLight.position.set(10, 10, 10);
+            scene.add(pLight);
+
+            // 1. القشرة الكريستالية (شفافية عالية جداً وحجم أكبر قليلاً)
+            const sphereGeo = new THREE.SphereGeometry(1.8, 45, 45, 0, Math.PI * 2, 0, 0.1); 
+            const sphereMat = new THREE.MeshPhongMaterial({ 
+                color: 0xffffff,
+                transparent: true, 
+                opacity: 0.07, 
+                shininess: 120, 
+                side: THREE.DoubleSide 
+            });
+            sphere = new THREE.Mesh(sphereGeo, sphereMat);
+            scene.add(sphere);
+
+            // 2. الخطوط الشبكية (نحيفة وحادة جداً)
+            const wireMat = new THREE.MeshBasicMaterial({ 
+                color: 0x0ea5e9, 
+                wireframe: true, 
+                transparent: true, 
+                opacity: 0.15 
+            });
+            wireframe = new THREE.Mesh(sphereGeo, wireMat);
+            scene.add(wireframe);
+
+            // 3. المحاور الذهبية المشرقة
+            const axes = [
+                new THREE.Vector3(1.8, 0, 0),
+                new THREE.Vector3(0, 1.8, 0),
+                new THREE.Vector3(0, 0, 1.8)
+            ];
+            
+            axes.forEach(axis => {
+                const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), axis]);
+                const line = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.9 }));
+                line.visible = false;
+                radiusLines.push(line);
+                scene.add(line);
+            });
+
+            camera.position.set(4, 4, 6);
+            camera.lookAt(0, 0, 0);
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if(sphere) {
+                sphere.rotation.y += 0.004;
+                wireframe.rotation.y += 0.004;
+                
+                const phiLength = Math.PI * growthValue;
+                const newGeo = new THREE.SphereGeometry(1.8, 45, 45, 0, Math.PI * 2, Math.PI - phiLength, phiLength);
+                sphere.geometry.dispose();
+                wireframe.geometry.dispose();
+                sphere.geometry = newGeo;
+                wireframe.geometry = newGeo;
+
+                radiusLines.forEach(line => {
+                    if(growthValue > 0.45) {
+                        line.visible = true;
+                        line.rotation.y += 0.004;
+                    }
+                });
+            }
+            renderer.render(scene, camera);
+        }
+
+        // --- منطق الشرح الكتابي ---
         const canvas = document.getElementById('canvas');
-        const replayBtn = document.getElementById('replayBtn');
+        const boardScroll = document.getElementById('boardScroll');
+        
+        const htmlTemplates = {
+            step1: `36π = <div class="fraction"><div class="num">4</div><div class="den">3</div></div> π r³`,
+            step2: `36 = <div class="fraction"><div class="num">4</div><div class="den">3</div></div> r³`,
+            step3: `r³ = 36 × <div class="fraction"><div class="num">3</div><div class="den">4</div></div>`,
+            step4: `r³ = 27  ⇒  r = 3 سم`,
+            area: `المساحة = 4 × π × (3)² = 36π`
+        };
 
         const script = [
-            { text: "📝 حل مسألة رياضية: مساحة سطح الكرة", style: "text-2xl font-bold text-yellow-400 border-b-2 border-yellow-500 pb-2 mb-4" },
-            { text: "السؤال: إذا كان حجم كرة يساوي 36π سم³، فاحسب مساحة سطحها؟", style: "question-highlight text-xl text-white font-semibold italic" },
-            { text: "--------------------------------------------------", style: "text-gray-600" },
-            { text: "الخطوة الأولى: إيجاد نصف القطر (نق) من الحجم", style: "text-xl font-bold text-blue-300" },
-            { text: "نعلم أن قانون الحجم هو: (4/3) × π × نق³", style: "text-lg" },
-            { text: "36π = (4/3) × π × نق³", style: "math-box text-xl" },
-            { text: "بقسمة الطرفين على π واختصار الكسور:", style: "text-lg" },
-            { text: "نق³ = 36 × (3/4) = 27", style: "math-box text-xl text-yellow-300" },
-            { text: "بأخذ الجذر التكعيبي: نق = 3 سم", style: "text-xl font-bold text-green-400" },
-            { text: "--------------------------------------------------", style: "text-gray-600" },
-            { text: "الخطوة الثانية: حساب مساحة السطح باستخدام (نق = 3)", style: "text-xl font-bold text-blue-300" },
-            { text: "قانون مساحة سطح الكرة = 4 × π × نق²", style: "text-lg" },
-            { text: "المساحة = 4 × π × (3)²", style: "math-box text-xl" },
-            { text: "المساحة = 4 × π × 9", style: "math-box text-xl" },
-            { text: "النتيجة النهائية:", style: "text-lg font-bold" },
-            { text: "مساحة سطح الكرة = 36π سم²", style: "text-3xl font-bold text-green-500 border-4 border-green-500 p-4 inline-block mt-2 rounded-xl" },
-            { text: "✅ نلاحظ في هذه الحالة الخاصة أن القيمة العددية للحجم تساوي القيمة العددية للمساحة!", style: "text-md text-orange-300 mt-4 italic" }
+            { type: "text", content: "السؤال: كرة حجمها 36π سم³، أوجد مساحة سطحها؟", style: "question-highlight text-xl font-bold text-white shadow-lg" },
+            { type: "text", content: "الخطوة الأولى: إيجاد نصف القطر (r)", style: "text-lg font-bold text-sky-400 mt-4", grow: 0.2 },
+            { type: "text", content: "نطبق قانون الحجم لمساواته بالمعطى:", style: "text-slate-400", grow: 0.3 },
+            { type: "html", content: htmlTemplates.step1, style: "math-block text-sky-300", grow: 0.4 },
+            { type: "text", content: "بقسمة الطرفين على π واستخراج r³:", style: "text-slate-400", grow: 0.6 },
+            { type: "html", content: htmlTemplates.step3, style: "math-block text-amber-300", grow: 0.8 },
+            { type: "text", content: "إذن r³ = 27، ومنها r تساوي:", style: "text-slate-400", grow: 0.9 },
+            { type: "html", content: htmlTemplates.step4, style: "math-block text-green-400 font-bold", grow: 1.0 },
+            { type: "text", content: "الخطوة الثانية: حساب مساحة السطح المكتمل", style: "text-lg font-bold text-sky-400 mt-6" },
+            { type: "html", content: htmlTemplates.area, style: "math-block text-sky-300" },
+            { type: "badge", content: "36π سم²", style: "final-badge" }
         ];
 
-        async function typeLine(item) {
+        async function renderStep(item) {
             const lineDiv = document.createElement('div');
             lineDiv.className = "line-container " + (item.style || "");
-            const textSpan = document.createElement('span');
-            const cursorSpan = document.createElement('span');
-            cursorSpan.className = "cursor";
-            
-            lineDiv.appendChild(textSpan);
-            lineDiv.appendChild(cursorSpan);
             canvas.appendChild(lineDiv);
 
-            const fullText = item.text;
-            for (let i = 1; i <= fullText.length; i++) {
-                textSpan.innerText = fullText.substring(0, i);
-                await new Promise(r => setTimeout(r, 45)); 
-                window.scrollTo(0, document.body.scrollHeight);
+            if (item.grow !== undefined) {
+                let targetGrow = item.grow;
+                let currentGrow = growthValue;
+                const interval = setInterval(() => {
+                    if (currentGrow >= targetGrow) clearInterval(interval);
+                    else { currentGrow += 0.01; growthValue = currentGrow; }
+                }, 12);
             }
-            
-            cursorSpan.remove(); 
-            await new Promise(r => setTimeout(r, 900)); 
+
+            if (item.type === "text") {
+                const textSpan = document.createElement('span');
+                lineDiv.appendChild(textSpan);
+                for (let i = 1; i <= item.content.length; i++) {
+                    textSpan.innerText = item.content.substring(0, i);
+                    await new Promise(r => setTimeout(r, 50));
+                    boardScroll.scrollTop = boardScroll.scrollHeight;
+                }
+                await new Promise(r => setTimeout(r, 800)); 
+            } else if (item.type === "html") {
+                lineDiv.innerHTML = item.content;
+                await new Promise(r => setTimeout(r, 1500)); 
+            } else if (item.type === "badge") {
+                lineDiv.innerHTML = `<div class="${item.style}">${item.content}</div>`;
+            }
+            boardScroll.scrollTop = boardScroll.scrollHeight;
         }
 
-        async function startPresentation() {
+        async function start() {
             canvas.innerHTML = '';
-            replayBtn.style.display = 'none';
-            for (const line of script) {
-                await typeLine(line);
-            }
-            replayBtn.style.display = 'block';
+            growthValue = 0;
+            document.getElementById('replayBtn').style.display = 'none';
+            for (const item of script) await renderStep(item);
+            document.getElementById('replayBtn').style.display = 'block';
         }
 
-        function resetBoard() {
-            startPresentation();
-        }
-
-        window.onload = () => {
-            setTimeout(startPresentation, 500);
+        function resetBoard() { start(); }
+        window.onload = () => { 
+            init3D(); 
+            window.addEventListener('resize', () => {
+                const container = document.getElementById('sphere-canvas-container');
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+            setTimeout(start, 500); 
         };
     </script>
 </body>
